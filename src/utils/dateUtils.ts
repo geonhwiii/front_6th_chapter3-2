@@ -112,12 +112,17 @@ export function formatDate(currentDate: Date, day?: number) {
 export function generateRepeatDates(event: Event, endDate: Date): string[] {
   const dates: string[] = [event.date];
 
+  // event.repeat.endDate가 있으면 더 이른 날짜를 사용
+  const effectiveEndDate = event.repeat.endDate 
+    ? new Date(Math.min(new Date(event.repeat.endDate).getTime(), endDate.getTime()))
+    : endDate;
+
   if (event.repeat.type === 'monthly') {
     const startDate = new Date(event.date);
     const originalDay = startDate.getDate();
     let currentDate = new Date(startDate);
 
-    while (currentDate <= endDate) {
+    while (currentDate <= effectiveEndDate) {
       currentDate.setMonth(currentDate.getMonth() + event.repeat.interval);
       currentDate.setDate(1);
 
@@ -126,7 +131,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
       if (originalDay <= lastDayOfMonth) {
         currentDate.setDate(originalDay);
 
-        if (currentDate <= endDate) {
+        if (currentDate <= effectiveEndDate) {
           const dateString = formatDate(currentDate);
           dates.push(dateString);
         }
@@ -142,14 +147,14 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
       currentYear += event.repeat.interval;
 
       const candidateDate = new Date(currentYear, originalMonth, 1);
-      if (candidateDate > endDate) break;
+      if (candidateDate > effectiveEndDate) break;
 
       const lastDayOfMonth = getDaysInMonth(currentYear, originalMonth + 1);
 
       if (originalDay <= lastDayOfMonth) {
         candidateDate.setDate(originalDay);
 
-        if (candidateDate <= endDate) {
+        if (candidateDate <= effectiveEndDate) {
           const dateString = formatDate(candidateDate);
           dates.push(dateString);
         }

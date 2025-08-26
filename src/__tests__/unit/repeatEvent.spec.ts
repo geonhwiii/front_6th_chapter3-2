@@ -74,3 +74,39 @@ describe('윤년 2월 29일 매년 반복 처리', () => {
     expect(repeatDates).toEqual(expectedDates);
   });
 });
+
+describe('반복 종료 조건 처리', () => {
+  test('특정 날짜까지 종료 조건이 적용된다', () => {
+    // Given: 반복 일정과 "특정 날짜까지" 종료 조건이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'test-3',
+      title: '종료 날짜 테스트',
+      date: '2024-01-01',
+      startTime: '14:00',
+      endTime: '15:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'monthly',
+        interval: 1,
+        endDate: '2024-03-15' // 3월 15일까지만
+      },
+      notificationTime: 0
+    };
+    
+    // When: 반복 일정을 생성할 때
+    const endDate = new Date('2024-12-31'); // 더 큰 범위로 설정
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+    
+    // Then: 지정한 종료 날짜를 넘지 않는 일정들만 반환되어야 한다
+    const expectedDates = [
+      '2024-01-01', // 원본
+      '2024-02-01', // 2월 1일
+      '2024-03-01', // 3월 1일 (3월 15일 이전이므로 포함)
+      // '2024-04-01'은 endDate(3월 15일) 이후이므로 제외됨
+    ];
+    
+    expect(repeatDates).toEqual(expectedDates);
+  });
+});
