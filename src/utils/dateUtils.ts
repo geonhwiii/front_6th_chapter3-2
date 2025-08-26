@@ -132,6 +132,29 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
         }
       }
     }
+  } else if (event.repeat.type === 'yearly') {
+    const startDate = new Date(event.date);
+    const originalMonth = startDate.getMonth();
+    const originalDay = startDate.getDate();
+    let currentYear = startDate.getFullYear();
+
+    while (true) {
+      currentYear += event.repeat.interval;
+
+      const candidateDate = new Date(currentYear, originalMonth, 1);
+      if (candidateDate > endDate) break;
+
+      const lastDayOfMonth = getDaysInMonth(currentYear, originalMonth + 1);
+
+      if (originalDay <= lastDayOfMonth) {
+        candidateDate.setDate(originalDay);
+
+        if (candidateDate <= endDate) {
+          const dateString = formatDate(candidateDate);
+          dates.push(dateString);
+        }
+      }
+    }
   }
 
   return dates;

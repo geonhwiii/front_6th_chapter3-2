@@ -38,3 +38,39 @@ describe('31일 기준 매월 반복 처리', () => {
     expect(repeatDates).toEqual(expectedDates);
   });
 });
+
+describe('윤년 2월 29일 매년 반복 처리', () => {
+  test('평년에는 해당 날짜가 생성되지 않는다', () => {
+    // Given: 윤년 2024년 2월 29일 기준 매년 반복 설정이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'test-2',
+      title: '윤년 반복 일정',
+      date: '2024-02-29',
+      startTime: '09:00',
+      endTime: '10:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'yearly',
+        interval: 1,
+        endDate: '2028-12-31'
+      },
+      notificationTime: 0
+    };
+    
+    // When: 다음 4년의 반복 날짜를 계산할 때
+    const endDate = new Date('2028-12-31');
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+    
+    // Then: 평년(2025, 2026, 2027)에는 해당 날짜가 생성되지 않아야 한다
+    // 2028년은 윤년이므로 2월 29일이 생성되어야 함
+    const expectedDates = [
+      '2024-02-29', // 원본 (2024년은 윤년)
+      '2028-02-29', // 2028년은 윤년이므로 생성됨
+      // 2025, 2026, 2027년은 평년이므로 2월 29일이 없어서 제외됨
+    ];
+    
+    expect(repeatDates).toEqual(expectedDates);
+  });
+});
