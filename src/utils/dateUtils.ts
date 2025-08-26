@@ -108,3 +108,31 @@ export function formatDate(currentDate: Date, day?: number) {
     fillZero(day ?? currentDate.getDate()),
   ].join('-');
 }
+
+export function generateRepeatDates(event: Event, endDate: Date): string[] {
+  const dates: string[] = [event.date];
+
+  if (event.repeat.type === 'monthly') {
+    const startDate = new Date(event.date);
+    const originalDay = startDate.getDate();
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      currentDate.setMonth(currentDate.getMonth() + event.repeat.interval);
+      currentDate.setDate(1);
+
+      const lastDayOfMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth() + 1);
+
+      if (originalDay <= lastDayOfMonth) {
+        currentDate.setDate(originalDay);
+
+        if (currentDate <= endDate) {
+          const dateString = formatDate(currentDate);
+          dates.push(dateString);
+        }
+      }
+    }
+  }
+
+  return dates;
+}
