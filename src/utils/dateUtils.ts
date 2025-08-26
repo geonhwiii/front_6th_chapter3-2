@@ -117,7 +117,19 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     ? new Date(Math.min(new Date(event.repeat.endDate).getTime(), endDate.getTime()))
     : endDate;
 
-  if (event.repeat.type === 'monthly') {
+  if (event.repeat.type === 'daily') {
+    const startDate = new Date(event.date);
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= effectiveEndDate) {
+      currentDate.setDate(currentDate.getDate() + event.repeat.interval);
+
+      if (currentDate <= effectiveEndDate) {
+        const dateString = formatDate(currentDate);
+        dates.push(dateString);
+      }
+    }
+  } else if (event.repeat.type === 'monthly') {
     const startDate = new Date(event.date);
     const originalDay = startDate.getDate();
     let currentDate = new Date(startDate);
