@@ -129,6 +129,18 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
         dates.push(dateString);
       }
     }
+  } else if (event.repeat.type === 'weekly') {
+    const startDate = new Date(event.date);
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= effectiveEndDate) {
+      currentDate.setDate(currentDate.getDate() + (7 * event.repeat.interval));
+
+      if (currentDate <= effectiveEndDate) {
+        const dateString = formatDate(currentDate);
+        dates.push(dateString);
+      }
+    }
   } else if (event.repeat.type === 'monthly') {
     const startDate = new Date(event.date);
     const originalDay = startDate.getDate();

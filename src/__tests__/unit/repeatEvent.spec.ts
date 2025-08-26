@@ -151,4 +151,39 @@ describe('반복 간격 계산', () => {
 
     expect(repeatDates).toEqual(expectedDates);
   });
+
+  test('주간 반복에 2주 간격이 적용된다', () => {
+    // Given: 주간 반복에 2주 간격 설정이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'test-5',
+      title: '주간 간격 테스트',
+      date: '2024-01-01', // 월요일
+      startTime: '10:00',
+      endTime: '11:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'weekly',
+        interval: 2, // 2주 간격
+        endDate: '2024-02-29'
+      },
+      notificationTime: 0
+    };
+    
+    // When: 주간 반복 일정을 생성할 때
+    const endDate = new Date('2024-02-29');
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+    
+    // Then: 2주씩 간격을 두고 일정이 생성되어야 한다
+    const expectedDates = [
+      '2024-01-01', // 원본 (1월 1일 월요일)
+      '2024-01-15', // +2주 (1월 15일 월요일)
+      '2024-01-29', // +2주 (1월 29일 월요일)  
+      '2024-02-12', // +2주 (2월 12일 월요일)
+      '2024-02-26', // +2주 (2월 26일 월요일)
+    ];
+    
+    expect(repeatDates).toEqual(expectedDates);
+  });
 });
