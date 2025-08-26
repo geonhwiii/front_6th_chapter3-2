@@ -1,4 +1,4 @@
-import { Event } from '../types.ts';
+import { Event, EventForm } from '../types.ts';
 
 /**
  * 주어진 년도와 월의 일수를 반환합니다.
@@ -187,4 +187,56 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
   }
 
   return dates;
+}
+
+function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
+}
+
+export function createRepeatEvents(eventForm: EventForm): Event[] {
+  const baseEvent: Event = {
+    ...eventForm,
+    id: generateId(),
+  };
+
+  if (eventForm.repeat.type === 'none') {
+    return [baseEvent];
+  }
+
+  const endDate = eventForm.repeat.endDate ? new Date(eventForm.repeat.endDate) : new Date('2025-06-30');
+  const repeatDates = generateRepeatDates(baseEvent, endDate);
+  
+  return repeatDates.map(date => ({
+    ...baseEvent,
+    id: generateId(),
+    date,
+  }));
+}
+
+export function updateSingleRepeatEvent(events: Event[], eventId: string, updates: Partial<Event>): Event[] {
+  return events.map(event => {
+    if (event.id === eventId) {
+      return {
+        ...event,
+        ...updates,
+        repeat: { type: 'none', interval: 1 },
+      };
+    }
+    return event;
+  });
+}
+
+export function deleteSingleRepeatEvent(events: Event[], eventId: string): Event[] {
+  return events.filter(event => event.id !== eventId);
+}
+
+export interface EventWithDisplay extends Event {
+  isRepeatEvent?: boolean;
+}
+
+export function markRepeatEvents(events: Event[]): EventWithDisplay[] {
+  return events.map(event => ({
+    ...event,
+    isRepeatEvent: event.repeat.type !== 'none',
+  }));
 }
