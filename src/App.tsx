@@ -4,6 +4,7 @@ import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import Edit from '@mui/icons-material/Edit';
 import Notifications from '@mui/icons-material/Notifications';
+import Repeat from '@mui/icons-material/Repeat';
 import {
   Alert,
   AlertTitle,
@@ -49,6 +50,7 @@ import {
   getEventsForDay,
   getWeekDates,
   getWeeksAtMonth,
+  markRepeatEvents,
 } from './utils/dateUtils';
 import { findOverlappingEvents } from './utils/eventOverlap';
 import { getTimeErrorMessage } from './utils/timeValidation';
@@ -106,6 +108,7 @@ function App() {
   const { notifications, notifiedEvents, setNotifications } = useNotifications(events);
   const { view, setView, currentDate, holidays, navigate } = useCalendarView();
   const { searchTerm, filteredEvents, setSearchTerm } = useSearch(events, currentDate, view);
+  const markedEvents = markRepeatEvents(filteredEvents);
 
   const [isOverlapDialogOpen, setIsOverlapDialogOpen] = useState(false);
   const [overlappingEvents, setOverlappingEvents] = useState<Event[]>([]);
@@ -183,7 +186,7 @@ function App() {
                     <Typography variant="body2" fontWeight="bold">
                       {date.getDate()}
                     </Typography>
-                    {filteredEvents
+                    {markedEvents
                       .filter(
                         (event) => new Date(event.date).toDateString() === date.toDateString()
                       )
@@ -206,6 +209,7 @@ function App() {
                           >
                             <Stack direction="row" spacing={1} alignItems="center">
                               {isNotified && <Notifications fontSize="small" />}
+                              {event.isRepeatEvent && <Repeat fontSize="small" color="action" />}
                               <Typography
                                 variant="caption"
                                 noWrap
@@ -274,7 +278,7 @@ function App() {
                                 {holiday}
                               </Typography>
                             )}
-                            {getEventsForDay(filteredEvents, day).map((event) => {
+                            {getEventsForDay(markedEvents, day).map((event) => {
                               const isNotified = notifiedEvents.includes(event.id);
                               return (
                                 <Box
@@ -293,6 +297,9 @@ function App() {
                                 >
                                   <Stack direction="row" spacing={1} alignItems="center">
                                     {isNotified && <Notifications fontSize="small" />}
+                                    {event.isRepeatEvent && (
+                                      <Repeat fontSize="small" color="action" />
+                                    )}
                                     <Typography
                                       variant="caption"
                                       noWrap
@@ -537,15 +544,16 @@ function App() {
             />
           </FormControl>
 
-          {filteredEvents.length === 0 ? (
+          {markedEvents.length === 0 ? (
             <Typography>검색 결과가 없습니다.</Typography>
           ) : (
-            filteredEvents.map((event) => (
+            markedEvents.map((event) => (
               <Box key={event.id} sx={{ border: 1, borderRadius: 2, p: 3, width: '100%' }}>
                 <Stack direction="row" justifyContent="space-between">
                   <Stack>
                     <Stack direction="row" spacing={1} alignItems="center">
                       {notifiedEvents.includes(event.id) && <Notifications color="error" />}
+                      {event.isRepeatEvent && <Repeat color="action" />}
                       <Typography
                         fontWeight={notifiedEvents.includes(event.id) ? 'bold' : 'normal'}
                         color={notifiedEvents.includes(event.id) ? 'error' : 'inherit'}
