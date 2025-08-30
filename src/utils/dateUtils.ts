@@ -189,6 +189,11 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     }
   }
 
+  // 예외 날짜가 있다면 해당 날짜들을 제외
+  if (event.repeat.excludeDates && event.repeat.excludeDates.length > 0) {
+    return dates.filter((date) => !event.repeat.excludeDates?.includes(date));
+  }
+
   return dates;
 }
 

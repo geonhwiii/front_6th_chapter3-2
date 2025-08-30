@@ -18,6 +18,9 @@ export const useEventForm = (initialEvent?: Event) => {
   const [repeatInterval, setRepeatInterval] = useState(initialEvent?.repeat.interval || 1);
   const [repeatEndDate, setRepeatEndDate] = useState(initialEvent?.repeat.endDate || '');
   const [repeatEndCount, setRepeatEndCount] = useState(initialEvent?.repeat.endCount || '');
+  const [excludeDates, setExcludeDates] = useState<string[]>(
+    initialEvent?.repeat.excludeDates || []
+  );
   const [endType, setEndType] = useState<'date' | 'count' | 'never'>(
     initialEvent?.repeat.endDate ? 'date' : initialEvent?.repeat.endCount ? 'count' : 'never'
   );
@@ -55,6 +58,7 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatInterval(1);
     setRepeatEndDate('');
     setRepeatEndCount('');
+    setExcludeDates([]);
     setEndType('never');
     setNotificationTime(10);
   };
@@ -73,6 +77,7 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatInterval(event.repeat.interval);
     setRepeatEndDate(event.repeat.endDate || '');
     setRepeatEndCount(event.repeat.endCount || '');
+    setExcludeDates(event.repeat.excludeDates || []);
     setEndType(event.repeat.endDate ? 'date' : event.repeat.endCount ? 'count' : 'never');
     setNotificationTime(event.notificationTime);
   };
@@ -104,6 +109,8 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatEndCount,
     endType,
     setEndType,
+    excludeDates,
+    setExcludeDates,
     notificationTime,
     setNotificationTime,
     startTimeError,

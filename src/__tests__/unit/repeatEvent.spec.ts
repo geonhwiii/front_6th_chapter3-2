@@ -357,3 +357,85 @@ describe('반복 일정 전체 조작', () => {
     expect(updatedEvents[0].title).toBe('다른 일정');
   });
 });
+
+describe('예외 날짜 처리', () => {
+  test('반복 일정 중 특정 날짜가 제외된다', () => {
+    // Given: 반복 일정과 예외 날짜 목록이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'exclude-test',
+      title: '예외 날짜 테스트',
+      date: '2024-01-01',
+      startTime: '10:00',
+      endTime: '11:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'weekly',
+        interval: 1,
+        endDate: '2024-02-29',
+        excludeDates: ['2024-01-15', '2024-01-29'], // 1월 15일, 29일 제외
+      },
+      notificationTime: 10,
+    };
+
+    // When: 반복 일정을 생성할 때
+    const endDate = new Date('2024-02-29');
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+
+    // Then: 예외 날짜는 제외된 일정 목록이 반환되어야 한다
+    const expectedDates = [
+      '2024-01-01', // 원본
+      '2024-01-08', // +1주
+      // '2024-01-15' 제외됨
+      '2024-01-22', // +1주
+      // '2024-01-29' 제외됨
+      '2024-02-05', // +1주
+      '2024-02-12', // +1주
+      '2024-02-19', // +1주
+      '2024-02-26', // +1주
+    ];
+
+    expect(repeatDates).toEqual(expectedDates);
+    // 제외된 날짜들이 포함되지 않았는지 확인
+    expect(repeatDates).not.toContain('2024-01-15');
+    expect(repeatDates).not.toContain('2024-01-29');
+  });
+
+  test('예외 날짜가 없으면 모든 반복 일정이 생성된다', () => {
+    // Given: 예외 날짜가 없는 반복 일정이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'no-exclude-test',
+      title: '예외 날짜 없음 테스트',
+      date: '2024-01-01',
+      startTime: '14:00',
+      endTime: '15:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'weekly',
+        interval: 1,
+        endDate: '2024-01-29',
+        // excludeDates 없음
+      },
+      notificationTime: 5,
+    };
+
+    // When: 반복 일정을 생성할 때
+    const endDate = new Date('2024-01-29');
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+
+    // Then: 모든 반복 일정이 생성되어야 한다
+    const expectedDates = [
+      '2024-01-01', // 원본
+      '2024-01-08', // +1주
+      '2024-01-15', // +1주
+      '2024-01-22', // +1주
+      '2024-01-29', // +1주
+    ];
+
+    expect(repeatDates).toEqual(expectedDates);
+    expect(repeatDates).toHaveLength(5);
+  });
+});

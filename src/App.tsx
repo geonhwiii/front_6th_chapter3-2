@@ -10,6 +10,7 @@ import {
   AlertTitle,
   Box,
   Button,
+  Chip,
   Checkbox,
   Dialog,
   DialogActions,
@@ -92,6 +93,8 @@ function App() {
     setRepeatEndCount,
     endType,
     setEndType,
+    excludeDates,
+    setExcludeDates,
     notificationTime,
     setNotificationTime,
     startTimeError,
@@ -150,6 +153,7 @@ function App() {
         endDate: isRepeating && endType === 'date' ? repeatEndDate || undefined : undefined,
         endCount:
           isRepeating && endType === 'count' ? Number(repeatEndCount) || undefined : undefined,
+        excludeDates: isRepeating && excludeDates.length > 0 ? excludeDates : undefined,
       },
       notificationTime,
     };
@@ -526,6 +530,48 @@ function App() {
             </Stack>
           )}
 
+          {isRepeating && (
+            <Stack spacing={2}>
+              <Typography variant="h6">예외 날짜</Typography>
+              <Box>
+                <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+                  <TextField
+                    size="small"
+                    type="date"
+                    label="제외할 날짜"
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => {
+                      const newDate = e.target.value;
+                      if (newDate && !excludeDates.includes(newDate)) {
+                        setExcludeDates([...excludeDates, newDate]);
+                      }
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    제외할 날짜를 선택하세요
+                  </Typography>
+                </Stack>
+                {excludeDates.length > 0 && (
+                  <Stack spacing={1}>
+                    <Typography variant="subtitle2">제외된 날짜들:</Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {excludeDates.map((date, index) => (
+                        <Chip
+                          key={index}
+                          label={date}
+                          onDelete={() => {
+                            setExcludeDates(excludeDates.filter((_, i) => i !== index));
+                          }}
+                          size="small"
+                        />
+                      ))}
+                    </Stack>
+                  </Stack>
+                )}
+              </Box>
+            </Stack>
+          )}
+
           <Button
             data-testid="event-submit-button"
             onClick={addOrUpdateEvent}
@@ -698,6 +744,8 @@ function App() {
                   type: isRepeating ? repeatType : 'none',
                   interval: repeatInterval,
                   endDate: repeatEndDate || undefined,
+                  endCount: endType === 'count' ? Number(repeatEndCount) || undefined : undefined,
+                  excludeDates: isRepeating && excludeDates.length > 0 ? excludeDates : undefined,
                 },
                 notificationTime,
               });
