@@ -104,8 +104,9 @@ function App() {
     editEvent,
   } = useEventForm();
 
-  const { events, saveEvent, deleteEvent } = useEventOperations(Boolean(editingEvent), () =>
-    setEditingEvent(null)
+  const { events, saveEvent, deleteEvent, deleteAllRepeatEventsLocal } = useEventOperations(
+    Boolean(editingEvent),
+    () => setEditingEvent(null)
   );
 
   const { notifications, notifiedEvents, setNotifications } = useNotifications(events);
@@ -115,6 +116,11 @@ function App() {
 
   const [isOverlapDialogOpen, setIsOverlapDialogOpen] = useState(false);
   const [overlappingEvents, setOverlappingEvents] = useState<Event[]>([]);
+  const [bulkOperationDialog, setBulkOperationDialog] = useState<{
+    open: boolean;
+    type: 'edit' | 'delete';
+    event: Event | null;
+  }>({ open: false, type: 'edit', event: null });
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -620,10 +626,36 @@ function App() {
                     </Typography>
                   </Stack>
                   <Stack>
-                    <IconButton aria-label="Edit event" onClick={() => editEvent(event)}>
+                    <IconButton
+                      aria-label="Edit event"
+                      onClick={() => {
+                        if (event.repeat.type !== 'none') {
+                          setBulkOperationDialog({
+                            open: true,
+                            type: 'edit',
+                            event,
+                          });
+                        } else {
+                          editEvent(event);
+                        }
+                      }}
+                    >
                       <Edit />
                     </IconButton>
-                    <IconButton aria-label="Delete event" onClick={() => deleteEvent(event.id)}>
+                    <IconButton
+                      aria-label="Delete event"
+                      onClick={() => {
+                        if (event.repeat.type !== 'none') {
+                          setBulkOperationDialog({
+                            open: true,
+                            type: 'delete',
+                            event,
+                          });
+                        } else {
+                          deleteEvent(event.id);
+                        }
+                      }}
+                    >
                       <Delete />
                     </IconButton>
                   </Stack>
@@ -672,6 +704,60 @@ function App() {
             }}
           >
             계속 진행
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={bulkOperationDialog.open}
+        onClose={() => setBulkOperationDialog({ open: false, type: 'edit', event: null })}
+      >
+        <DialogTitle>
+          {bulkOperationDialog.type === 'edit' ? '반복 일정 수정' : '반복 일정 삭제'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            이 일정은 반복 일정입니다. 어떤 작업을 수행하시겠습니까?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setBulkOperationDialog({ open: false, type: 'edit', event: null });
+            }}
+          >
+            취소
+          </Button>
+          <Button
+            onClick={() => {
+              if (bulkOperationDialog.event) {
+                if (bulkOperationDialog.type === 'edit') {
+                  editEvent(bulkOperationDialog.event);
+                } else {
+                  deleteEvent(bulkOperationDialog.event.id);
+                }
+              }
+              setBulkOperationDialog({ open: false, type: 'edit', event: null });
+            }}
+          >
+            이 일정만 {bulkOperationDialog.type === 'edit' ? '수정' : '삭제'}
+          </Button>
+          <Button
+            color={bulkOperationDialog.type === 'delete' ? 'error' : 'primary'}
+            onClick={() => {
+              if (bulkOperationDialog.event) {
+                if (bulkOperationDialog.type === 'edit') {
+                  // For bulk edit, just open the normal edit form for now
+                  // Future enhancement could implement true bulk editing
+                  editEvent(bulkOperationDialog.event);
+                } else {
+                  deleteAllRepeatEventsLocal(bulkOperationDialog.event.title);
+                }
+              }
+              setBulkOperationDialog({ open: false, type: 'edit', event: null });
+            }}
+          >
+            모든 반복 일정 {bulkOperationDialog.type === 'edit' ? '수정' : '삭제'}
           </Button>
         </DialogActions>
       </Dialog>

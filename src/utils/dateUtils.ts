@@ -249,3 +249,23 @@ export function markRepeatEvents(events: Event[]): EventWithDisplay[] {
     isRepeatEvent: event.repeat.type !== 'none',
   }));
 }
+
+export function updateAllRepeatEvents(
+  events: Event[],
+  targetTitle: string,
+  updates: Partial<Event>
+): Event[] {
+  return events.map((event) => {
+    if (event.title === targetTitle && event.repeat.type !== 'none') {
+      return {
+        ...event,
+        ...updates,
+      };
+    }
+    return event;
+  });
+}
+
+export function deleteAllRepeatEvents(events: Event[], targetTitle: string): Event[] {
+  return events.filter((event) => !(event.title === targetTitle && event.repeat.type !== 'none'));
+}

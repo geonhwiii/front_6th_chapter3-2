@@ -1,7 +1,11 @@
 import { describe, test, expect } from 'vitest';
 
 import { Event } from '../../types';
-import { generateRepeatDates } from '../../utils/dateUtils';
+import {
+  generateRepeatDates,
+  updateAllRepeatEvents,
+  deleteAllRepeatEvents,
+} from '../../utils/dateUtils';
 
 describe('31일 기준 매월 반복 처리', () => {
   test('31일이 없는 달은 제외된다', () => {
@@ -221,5 +225,135 @@ describe('반복 간격 계산', () => {
     ];
 
     expect(repeatDates).toEqual(expectedDates);
+  });
+});
+
+describe('반복 일정 전체 조작', () => {
+  test('반복 일정 전체 수정 시 모든 관련 일정이 업데이트된다', () => {
+    // Given: 반복 일정 그룹이 여러 개 있을 때
+    const events: Event[] = [
+      {
+        id: 'repeat-1',
+        title: '주간 회의',
+        date: '2024-01-01',
+        startTime: '10:00',
+        endTime: '11:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'weekly', interval: 1 },
+        notificationTime: 10,
+      },
+      {
+        id: 'repeat-2',
+        title: '주간 회의',
+        date: '2024-01-08',
+        startTime: '10:00',
+        endTime: '11:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'weekly', interval: 1 },
+        notificationTime: 10,
+      },
+      {
+        id: 'other-1',
+        title: '다른 일정',
+        date: '2024-01-05',
+        startTime: '14:00',
+        endTime: '15:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'none', interval: 1 },
+        notificationTime: 5,
+      },
+    ];
+
+    // When: 반복 일정 전체를 수정할 때
+    const updates = {
+      title: '수정된 주간 회의',
+      startTime: '14:00',
+      endTime: '15:00',
+    };
+    const updatedEvents = updateAllRepeatEvents(events, '주간 회의', updates);
+
+    // Then: 같은 제목의 반복 일정들만 모두 수정되어야 한다
+    const weeklyEvents = updatedEvents.filter((event) => event.title === '수정된 주간 회의');
+    expect(weeklyEvents).toHaveLength(2);
+    expect(weeklyEvents[0].startTime).toBe('14:00');
+    expect(weeklyEvents[0].endTime).toBe('15:00');
+    expect(weeklyEvents[1].startTime).toBe('14:00');
+    expect(weeklyEvents[1].endTime).toBe('15:00');
+
+    // 다른 일정은 변경되지 않아야 한다
+    const otherEvent = updatedEvents.find((event) => event.id === 'other-1');
+    expect(otherEvent?.title).toBe('다른 일정');
+    expect(otherEvent?.startTime).toBe('14:00');
+  });
+
+  test('반복 일정 전체 삭제 시 모든 관련 일정이 제거된다', () => {
+    // Given: 반복 일정 그룹이 여러 개 있을 때
+    const events: Event[] = [
+      {
+        id: 'repeat-1',
+        title: '주간 회의',
+        date: '2024-01-01',
+        startTime: '10:00',
+        endTime: '11:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'weekly', interval: 1 },
+        notificationTime: 10,
+      },
+      {
+        id: 'repeat-2',
+        title: '주간 회의',
+        date: '2024-01-08',
+        startTime: '10:00',
+        endTime: '11:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'weekly', interval: 1 },
+        notificationTime: 10,
+      },
+      {
+        id: 'repeat-3',
+        title: '주간 회의',
+        date: '2024-01-15',
+        startTime: '10:00',
+        endTime: '11:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'weekly', interval: 1 },
+        notificationTime: 10,
+      },
+      {
+        id: 'other-1',
+        title: '다른 일정',
+        date: '2024-01-05',
+        startTime: '14:00',
+        endTime: '15:00',
+        description: '',
+        location: '',
+        category: '',
+        repeat: { type: 'none', interval: 1 },
+        notificationTime: 5,
+      },
+    ];
+
+    // When: 반복 일정 전체를 삭제할 때
+    const updatedEvents = deleteAllRepeatEvents(events, '주간 회의');
+
+    // Then: 같은 제목의 반복 일정들만 모두 삭제되어야 한다
+    const weeklyEvents = updatedEvents.filter((event) => event.title === '주간 회의');
+    expect(weeklyEvents).toHaveLength(0);
+
+    // 다른 일정은 유지되어야 한다
+    expect(updatedEvents).toHaveLength(1);
+    expect(updatedEvents[0].title).toBe('다른 일정');
   });
 });

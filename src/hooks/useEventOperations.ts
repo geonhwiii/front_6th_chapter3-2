@@ -69,6 +69,26 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     }
   };
 
+  const deleteAllRepeatEventsLocal = async (targetTitle: string) => {
+    try {
+      const eventsToDelete = events.filter(
+        (event) => event.title === targetTitle && event.repeat.type !== 'none'
+      );
+
+      // Send delete requests to backend for all matching events
+      const promises = eventsToDelete.map((event) =>
+        fetch(`/api/events/${event.id}`, { method: 'DELETE' })
+      );
+
+      await Promise.all(promises);
+      await fetchEvents();
+      enqueueSnackbar('반복 일정이 전체 삭제되었습니다.', { variant: 'info' });
+    } catch (error) {
+      console.error('Error deleting all repeat events:', error);
+      enqueueSnackbar('반복 일정 전체 삭제 실패', { variant: 'error' });
+    }
+  };
+
   async function init() {
     await fetchEvents();
     enqueueSnackbar('일정 로딩 완료!', { variant: 'info' });
@@ -79,5 +99,11 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { events, fetchEvents, saveEvent, deleteEvent };
+  return {
+    events,
+    fetchEvents,
+    saveEvent,
+    deleteEvent,
+    deleteAllRepeatEventsLocal,
+  };
 };
