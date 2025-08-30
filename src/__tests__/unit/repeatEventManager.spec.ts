@@ -1,7 +1,12 @@
 import { describe, test, expect } from 'vitest';
 
 import { Event, EventForm } from '../../types';
-import { createRepeatEvents, updateSingleRepeatEvent, deleteSingleRepeatEvent, markRepeatEvents } from '../../utils/dateUtils';
+import {
+  createRepeatEvents,
+  updateSingleRepeatEvent,
+  deleteSingleRepeatEvent,
+  markRepeatEvents,
+} from '../../utils/dateUtils';
 
 describe('반복 일정 분할 생성', () => {
   test('반복 설정이 있는 이벤트는 여러 개의 개별 이벤트로 생성된다', () => {
@@ -33,12 +38,12 @@ describe('반복 일정 분할 생성', () => {
     expect(events[3].date).toBe('2024-04-15');
 
     // 모든 이벤트는 고유 ID를 가져야 함
-    const ids = events.map(event => event.id);
+    const ids = events.map((event) => event.id);
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(events.length);
 
     // 모든 이벤트는 동일한 기본 정보를 가져야 함
-    events.forEach(event => {
+    events.forEach((event) => {
       expect(event.title).toBe(baseEventForm.title);
       expect(event.startTime).toBe(baseEventForm.startTime);
       expect(event.endTime).toBe(baseEventForm.endTime);
@@ -130,7 +135,7 @@ describe('반복 일정 개별 처리', () => {
     const updatedEvents = updateSingleRepeatEvent(existingEvents, 'repeat-2', updates);
 
     // Then: 해당 이벤트의 repeat.type이 'none'으로 변경되고 내용이 업데이트됨
-    const updatedEvent = updatedEvents.find(event => event.id === 'repeat-2');
+    const updatedEvent = updatedEvents.find((event) => event.id === 'repeat-2');
     expect(updatedEvent).toBeDefined();
     expect(updatedEvent!.repeat.type).toBe('none');
     expect(updatedEvent!.title).toBe('특별 운동 세션');
@@ -139,8 +144,8 @@ describe('반복 일정 개별 처리', () => {
     expect(updatedEvent!.description).toBe('개별 수정된 운동');
 
     // 다른 이벤트들은 변경되지 않아야 함
-    const otherEvents = updatedEvents.filter(event => event.id !== 'repeat-2');
-    otherEvents.forEach(event => {
+    const otherEvents = updatedEvents.filter((event) => event.id !== 'repeat-2');
+    otherEvents.forEach((event) => {
       expect(event.repeat.type).toBe('weekly');
       expect(event.title).toBe('매주 운동');
     });
@@ -192,12 +197,12 @@ describe('반복 일정 개별 처리', () => {
 
     // Then: 해당 이벤트만 삭제되고 나머지 반복 이벤트들은 유지됨
     expect(remainingEvents).toHaveLength(2);
-    expect(remainingEvents.find(event => event.id === 'daily-2')).toBeUndefined();
-    expect(remainingEvents.find(event => event.id === 'daily-1')).toBeDefined();
-    expect(remainingEvents.find(event => event.id === 'daily-3')).toBeDefined();
+    expect(remainingEvents.find((event) => event.id === 'daily-2')).toBeUndefined();
+    expect(remainingEvents.find((event) => event.id === 'daily-1')).toBeDefined();
+    expect(remainingEvents.find((event) => event.id === 'daily-3')).toBeDefined();
 
     // 남은 이벤트들은 여전히 반복 설정을 유지해야 함
-    remainingEvents.forEach(event => {
+    remainingEvents.forEach((event) => {
       expect(event.repeat.type).toBe('daily');
     });
   });
@@ -237,8 +242,8 @@ describe('반복 일정 시각적 구분 처리', () => {
     const markedEvents = markRepeatEvents(events);
 
     // Then: 각 반복 이벤트는 isRepeatEvent 플래그가 true로 설정됨
-    const repeatEvent = markedEvents.find(event => event.id === 'repeat-1');
-    const singleEvent = markedEvents.find(event => event.id === 'single-1');
+    const repeatEvent = markedEvents.find((event) => event.id === 'repeat-1');
+    const singleEvent = markedEvents.find((event) => event.id === 'single-1');
 
     expect(repeatEvent).toHaveProperty('isRepeatEvent', true);
     expect(singleEvent).toHaveProperty('isRepeatEvent', false);
@@ -265,7 +270,7 @@ describe('반복 일정 시각적 구분 처리', () => {
     const markedEvents = markRepeatEvents(events);
 
     // Then: isRepeatEvent 플래그가 false로 변경됨
-    const modifiedEvent = markedEvents.find(event => event.id === 'modified-repeat');
+    const modifiedEvent = markedEvents.find((event) => event.id === 'modified-repeat');
     expect(modifiedEvent).toHaveProperty('isRepeatEvent', false);
   });
 });

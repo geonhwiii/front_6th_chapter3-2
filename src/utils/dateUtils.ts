@@ -113,7 +113,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
   const dates: string[] = [event.date];
 
   // event.repeat.endDate가 있으면 더 이른 날짜를 사용
-  const effectiveEndDate = event.repeat.endDate 
+  const effectiveEndDate = event.repeat.endDate
     ? new Date(Math.min(new Date(event.repeat.endDate).getTime(), endDate.getTime()))
     : endDate;
 
@@ -134,7 +134,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     let currentDate = new Date(startDate);
 
     while (currentDate <= effectiveEndDate) {
-      currentDate.setDate(currentDate.getDate() + (7 * event.repeat.interval));
+      currentDate.setDate(currentDate.getDate() + 7 * event.repeat.interval);
 
       if (currentDate <= effectiveEndDate) {
         const dateString = formatDate(currentDate);
@@ -203,18 +203,24 @@ export function createRepeatEvents(eventForm: EventForm): Event[] {
     return [baseEvent];
   }
 
-  const endDate = eventForm.repeat.endDate ? new Date(eventForm.repeat.endDate) : new Date('2025-06-30');
+  const endDate = eventForm.repeat.endDate
+    ? new Date(eventForm.repeat.endDate)
+    : new Date('2025-06-30');
   const repeatDates = generateRepeatDates(baseEvent, endDate);
-  
-  return repeatDates.map(date => ({
+
+  return repeatDates.map((date) => ({
     ...baseEvent,
     id: generateId(),
     date,
   }));
 }
 
-export function updateSingleRepeatEvent(events: Event[], eventId: string, updates: Partial<Event>): Event[] {
-  return events.map(event => {
+export function updateSingleRepeatEvent(
+  events: Event[],
+  eventId: string,
+  updates: Partial<Event>
+): Event[] {
+  return events.map((event) => {
     if (event.id === eventId) {
       return {
         ...event,
@@ -227,7 +233,7 @@ export function updateSingleRepeatEvent(events: Event[], eventId: string, update
 }
 
 export function deleteSingleRepeatEvent(events: Event[], eventId: string): Event[] {
-  return events.filter(event => event.id !== eventId);
+  return events.filter((event) => event.id !== eventId);
 }
 
 export interface EventWithDisplay extends Event {
@@ -235,7 +241,7 @@ export interface EventWithDisplay extends Event {
 }
 
 export function markRepeatEvents(events: Event[]): EventWithDisplay[] {
-  return events.map(event => ({
+  return events.map((event) => ({
     ...event,
     isRepeatEvent: event.repeat.type !== 'none',
   }));
