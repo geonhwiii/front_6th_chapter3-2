@@ -117,14 +117,17 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     ? new Date(Math.min(new Date(event.repeat.endDate).getTime(), endDate.getTime()))
     : endDate;
 
+  // endCount가 설정된 경우 횟수로 종료 조건을 제한
+  const maxCount = event.repeat.endCount || Infinity;
+
   if (event.repeat.type === 'daily') {
     const startDate = new Date(event.date);
     let currentDate = new Date(startDate);
 
-    while (currentDate <= effectiveEndDate) {
+    while (currentDate <= effectiveEndDate && dates.length < maxCount) {
       currentDate.setDate(currentDate.getDate() + event.repeat.interval);
 
-      if (currentDate <= effectiveEndDate) {
+      if (currentDate <= effectiveEndDate && dates.length < maxCount) {
         const dateString = formatDate(currentDate);
         dates.push(dateString);
       }
@@ -133,10 +136,10 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     const startDate = new Date(event.date);
     let currentDate = new Date(startDate);
 
-    while (currentDate <= effectiveEndDate) {
+    while (currentDate <= effectiveEndDate && dates.length < maxCount) {
       currentDate.setDate(currentDate.getDate() + 7 * event.repeat.interval);
 
-      if (currentDate <= effectiveEndDate) {
+      if (currentDate <= effectiveEndDate && dates.length < maxCount) {
         const dateString = formatDate(currentDate);
         dates.push(dateString);
       }
@@ -146,7 +149,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     const originalDay = startDate.getDate();
     let currentDate = new Date(startDate);
 
-    while (currentDate <= effectiveEndDate) {
+    while (currentDate <= effectiveEndDate && dates.length < maxCount) {
       currentDate.setMonth(currentDate.getMonth() + event.repeat.interval);
       currentDate.setDate(1);
 
@@ -155,7 +158,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
       if (originalDay <= lastDayOfMonth) {
         currentDate.setDate(originalDay);
 
-        if (currentDate <= effectiveEndDate) {
+        if (currentDate <= effectiveEndDate && dates.length < maxCount) {
           const dateString = formatDate(currentDate);
           dates.push(dateString);
         }
@@ -167,7 +170,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
     const originalDay = startDate.getDate();
     let currentYear = startDate.getFullYear();
 
-    while (true) {
+    while (dates.length < maxCount) {
       currentYear += event.repeat.interval;
 
       const candidateDate = new Date(currentYear, originalMonth, 1);
@@ -178,7 +181,7 @@ export function generateRepeatDates(event: Event, endDate: Date): string[] {
       if (originalDay <= lastDayOfMonth) {
         candidateDate.setDate(originalDay);
 
-        if (candidateDate <= effectiveEndDate) {
+        if (candidateDate <= effectiveEndDate && dates.length < maxCount) {
           const dateString = formatDate(candidateDate);
           dates.push(dateString);
         }

@@ -109,6 +109,42 @@ describe('반복 종료 조건 처리', () => {
 
     expect(repeatDates).toEqual(expectedDates);
   });
+
+  test('특정 횟수만큼 종료 조건이 적용된다', () => {
+    // Given: 반복 일정과 "특정 횟수만큼" 종료 조건이 주어졌을 때
+    const baseEvent: Event = {
+      id: 'test-count',
+      title: '횟수 제한 테스트',
+      date: '2024-01-01',
+      startTime: '14:00',
+      endTime: '15:00',
+      description: '',
+      location: '',
+      category: '',
+      repeat: {
+        type: 'weekly',
+        interval: 1,
+        endCount: 5, // 5번만 반복
+      },
+      notificationTime: 0,
+    };
+
+    // When: 반복 일정을 생성할 때
+    const endDate = new Date('2024-12-31'); // 충분히 먼 미래 날짜
+    const repeatDates = generateRepeatDates(baseEvent, endDate);
+
+    // Then: 지정한 횟수(5번)만큼의 일정들만 반환되어야 한다
+    const expectedDates = [
+      '2024-01-01', // 원본
+      '2024-01-08', // +1주
+      '2024-01-15', // +1주
+      '2024-01-22', // +1주
+      '2024-01-29', // +1주 (총 5개)
+    ];
+
+    expect(repeatDates).toEqual(expectedDates);
+    expect(repeatDates).toHaveLength(5);
+  });
 });
 
 describe('반복 간격 계산', () => {

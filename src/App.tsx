@@ -41,8 +41,7 @@ import { useEventForm } from './hooks/useEventForm.ts';
 import { useEventOperations } from './hooks/useEventOperations.ts';
 import { useNotifications } from './hooks/useNotifications.ts';
 import { useSearch } from './hooks/useSearch.ts';
-// import { Event, EventForm, RepeatType } from './types';
-import { Event, EventForm } from './types';
+import { Event, EventForm, RepeatType } from './types';
 import {
   formatDate,
   formatMonth,
@@ -84,11 +83,15 @@ function App() {
     isRepeating,
     setIsRepeating,
     repeatType,
-    // setRepeatType,
+    setRepeatType,
     repeatInterval,
-    // setRepeatInterval,
+    setRepeatInterval,
     repeatEndDate,
-    // setRepeatEndDate,
+    setRepeatEndDate,
+    repeatEndCount,
+    setRepeatEndCount,
+    endType,
+    setEndType,
     notificationTime,
     setNotificationTime,
     startTimeError,
@@ -138,7 +141,9 @@ function App() {
       repeat: {
         type: isRepeating ? repeatType : 'none',
         interval: repeatInterval,
-        endDate: repeatEndDate || undefined,
+        endDate: isRepeating && endType === 'date' ? repeatEndDate || undefined : undefined,
+        endCount:
+          isRepeating && endType === 'count' ? Number(repeatEndCount) || undefined : undefined,
       },
       notificationTime,
     };
@@ -450,7 +455,7 @@ function App() {
           </FormControl>
 
           {/* ! 반복은 8주차 과제에 포함됩니다. 구현하고 싶어도 참아주세요~ */}
-          {/* {isRepeating && (
+          {isRepeating && (
             <Stack spacing={2}>
               <FormControl fullWidth>
                 <FormLabel>반복 유형</FormLabel>
@@ -477,17 +482,43 @@ function App() {
                   />
                 </FormControl>
                 <FormControl fullWidth>
-                  <FormLabel>반복 종료일</FormLabel>
-                  <TextField
+                  <FormLabel>반복 종료 조건</FormLabel>
+                  <Select
                     size="small"
-                    type="date"
-                    value={repeatEndDate}
-                    onChange={(e) => setRepeatEndDate(e.target.value)}
-                  />
+                    value={endType}
+                    onChange={(e) => setEndType(e.target.value as 'date' | 'count' | 'never')}
+                  >
+                    <MenuItem value="never">종료 없음</MenuItem>
+                    <MenuItem value="date">특정 날짜까지</MenuItem>
+                    <MenuItem value="count">특정 횟수만큼</MenuItem>
+                  </Select>
                 </FormControl>
+                {endType === 'date' && (
+                  <FormControl fullWidth>
+                    <FormLabel>종료 날짜</FormLabel>
+                    <TextField
+                      size="small"
+                      type="date"
+                      value={repeatEndDate}
+                      onChange={(e) => setRepeatEndDate(e.target.value)}
+                    />
+                  </FormControl>
+                )}
+                {endType === 'count' && (
+                  <FormControl fullWidth>
+                    <FormLabel>반복 횟수</FormLabel>
+                    <TextField
+                      size="small"
+                      type="number"
+                      value={repeatEndCount}
+                      onChange={(e) => setRepeatEndCount(e.target.value)}
+                      slotProps={{ htmlInput: { min: 1 } }}
+                    />
+                  </FormControl>
+                )}
               </Stack>
             </Stack>
-          )} */}
+          )}
 
           <Button
             data-testid="event-submit-button"
